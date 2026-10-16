@@ -1,0 +1,12 @@
+{
+  "name": "tree-sitter-sql",
+  "version": "0.0.0-vendored",
+  "description": "Vendored copy of tree-sitter-sql from @fraziym/tree-sitters (prebuilt, no native compilation at install time).",
+  "main": "bindings/node/index.js",
+  "scripts": {
+    "install": "node-gyp-build"
+  },
+  "dependencies": {
+    "node-gyp-build": "^5.0.0"
+  }
+}

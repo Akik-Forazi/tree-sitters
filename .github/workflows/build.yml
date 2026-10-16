@@ -1,0 +1,127 @@
+name: Build Prebuilds
+
+# Builds prebuilt .node binaries for all vendored tree-sitter grammars
+# on a matrix of platforms × architectures. The resulting prebuilds are
+# committed to the repo on tag push, OR attached to a GitHub Release.
+#
+# When a consumer runs `npm ci` and the install script fires
+# `node-gyp-build`, it finds the matching prebuild for the current
+# platform and loads it directly — NO source compilation, NO Visual
+# Studio requirement on Windows, NO node-gyp rebuild.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+            node_arch: x64
+          - os: ubuntu-latest
+            platform: linux
+            arch: arm64
+            node_arch: arm64
+          - os: windows-latest
+            platform: win32
+            arch: x64
+            node_arch: x64
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+            node_arch: x64
+          - os: macos-latest
+            platform: darwin
+            arch: arm64
+            node_arch: arm64
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'windows-latest' && 'pwsh' || 'bash' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          architecture: ${{ matrix.node_arch }}
+
+      - name: Install deps (Linux/macOS x64)
+        if: matrix.os != 'windows-latest' && matrix.arch != 'arm64'
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Install deps (Linux/macOS arm64)
+        if: matrix.os != 'windows-latest' && matrix.arch == 'arm64'
+        run: npm install --ignore-scripts --no-audit --no-fund
+        env:
+          # Cross-compiling for arm64 on x64 Linux runner — requires
+          # extra config. For now, only x64 prebuilds are generated;
+          # arm64 can be added later by using a native arm64 runner
+          # (e.g. ubuntu-22.04-arm) once GitHub Actions supports it.
+          SKIP_ARM64: "1"
+
+      - name: Install deps (Windows)
+        if: matrix.os == 'windows-latest'
+        run: npm install --ignore-scripts --no-audit --no-fund
+
+      - name: Build all grammars for this platform
+        run: npm run build
+
+      - name: Assemble prebuilds/<platform>/<arch>/ directory
+        run: node scripts/assemble-prebuilds.mjs --platform=${{ matrix.platform }} --arch=${{ matrix.arch }}
+
+      - name: Upload prebuild artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: prebuilds-${{ matrix.platform }}-${{ matrix.arch }}
+          path: prebuilds/
+          retention-days: 30
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          registry-url: https://registry.npmjs.org/
+
+      - name: Download all prebuild artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: prebuilds/
+          pattern: prebuilds-*
+          merge-multiple: false
+
+      - name: Merge artifacts into prebuilds/<platform>/<arch>/ structure
+        run: node scripts/merge-prebuild-artifacts.mjs
+
+      - name: Commit prebuilds + publish
+        run: |
+          git config user.name "tree-sitters-bot"
+          git config user.email "tree-sitters-bot@users.noreply.github.com"
+          git add prebuilds/ grammars/*/package.json grammars/*/bindings/node/index.js
+          git commit -m "chore: add prebuilds for ${{ github.ref.name }}" || true
+          git push
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
