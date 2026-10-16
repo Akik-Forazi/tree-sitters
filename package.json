@@ -36,7 +36,7 @@
     "grammars/*"
   ],
   "devDependencies": {
-    "node-gyp-build": "^5.0.0",
+    "node-gyp-build": "^4.8.0",
     "node-gyp": "^10.0.0",
     "prebuildify": "^6.0.0"
   }
