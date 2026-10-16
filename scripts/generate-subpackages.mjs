@@ -24,6 +24,13 @@ const TEMPLATE = (name) => ({
   version: "0.0.0-vendored",
   description: `Vendored copy of tree-sitter-${name} from @fraziym/tree-sitters. The bindings/node/index.js throws when required — axodex catches the throw and reports the grammar as 'unavailable'. Once prebuilds are built via CI (.github/workflows/build.yml), this sub-package will be published with prebuilds and the install script will switch to 'node-gyp-build' which loads the prebuilt .node file directly.`,
   main: "bindings/node/index.js",
+  // CRITICAL: gypfile=false tells npm NOT to auto-trigger node-gyp rebuild
+  // when it sees binding.gyp on disk. Without this, npm ci would try to
+  // compile the grammar at install time — which fails on Windows (no VS)
+  // and on Node 24 (old V8 API in binding.cc).
+  // The binding.gyp file is kept in the repo for FUTURE use (when CI
+  // builds prebuilds, the build script runs `node-gyp rebuild` explicitly).
+  gypfile: false,
   scripts: {},
   dependencies: {},
 });
