@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {
   "name": "@fraziym/tree-sitters",
   "version": "0.2.0-beta.1",
@@ -43,6 +42,5 @@
     "prebuildify": "^6.0.0"
   }
 }
-=======
+
 {"name": "@fraziym/tree-sitters", "version": "0.2.0-beta.1", "description": "FRAZIYM-maintained tree-sitter grammar collection. Vendored from upstream tree-sitter-* npm packages that have no prebuilds and fail native compilation on Node 22+ Windows CI runners. Each grammar ships as a sub-package with platform prebuilds (linux-x64, win32-x64, darwin-arm64, darwin-x64) so install NEVER triggers node-gyp rebuild.", "license": "MIT", "author": "AKIK FARAJI <akikfaraji@gmail.com> (https://fraziym.com)", "main": "index.js", "repository": {"type": "git", "url": "https://github.com/Akik-Forazi/tree-sitters.git"}, "homepage": "https://github.com/Akik-Forazi/tree-sitters#readme", "bugs": {"url": "https://github.com/Akik-Forazi/tree-sitters/issues"}, "keywords": ["tree-sitter", "parser", "grammar", "prebuilt", "node-gyp", "fraziym", "axoniz", "axodex"], "engines": {"node": ">=18"}, "scripts": {"build": "node scripts/build-grammars.mjs", "rebuild": "node scripts/build-grammars.mjs --rebuild", "clean": "node -e \"const fs=require('fs'); for (const g of fs.readdirSync('grammars')) { const p=`grammars/${g}/build`; try{fs.rmSync(p,{recursive:true,force:true})}catch{} }\"", "test": "node --test \"test/**/*.test.mjs\"", "list": "node -e \"const fs=require('fs'); console.log('Available grammars:'); for (const g of fs.readdirSync('grammars').filter(d=>fs.statSync(`grammars/${d}`).isDirectory())) { console.log('  -', g); }\""}, "workspaces": ["grammars/*"], "devDependencies": {"node-gyp-build": "^4.8.0", "node-gyp": "^10.0.0", "prebuildify": "^6.0.0"}, "exports": {".": "./index.js", "./graphql": "./grammars/graphql/bindings/node/index.js", "./lua": "./grammars/lua/bindings/node/index.js", "./sql": "./grammars/sql/bindings/node/index.js", "./toml": "./grammars/toml/bindings/node/index.js", "./yaml": "./grammars/yaml/bindings/node/index.js", "./package.json": "./package.json"}}
->>>>>>> b14d3b82d80a9f42b5226ea7f4aa31509d18633f
