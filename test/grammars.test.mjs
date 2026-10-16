@@ -26,11 +26,15 @@ test("each grammar has binding.gyp + src/parser.c + sub-package.json", () => {
   }
 });
 
-test("each grammar sub-package.json has name=tree-sitter-<name> + install=node-gyp-build", () => {
+test("each grammar sub-package.json has name=tree-sitter-<name> + NO install script (until prebuilds are built)", () => {
   for (const g of EXPECTED) {
     const pkg = JSON.parse(readFileSync(path.join(GRAMMARS_DIR, g, "package.json"), "utf-8"));
     assert.equal(pkg.name, `tree-sitter-${g}`, `${g}: wrong name`);
-    assert.equal(pkg.scripts?.install, "node-gyp-build", `${g}: install script wrong`);
+    // Until prebuilds are built via CI, the install script is empty —
+    // no native compilation at install time. axodex catches the
+    // require() throw and reports 'unavailable'.
+    assert.equal(pkg.scripts?.install, undefined, `${g}: should NOT have install script yet`);
+    assert.equal(pkg.scripts?.postinstall, undefined, `${g}: should NOT have postinstall script yet`);
   }
 });
 

@@ -22,21 +22,30 @@ const GRAMMARS_DIR = path.join(ROOT, "grammars");
 const TEMPLATE = (name) => ({
   name: `tree-sitter-${name}`,
   version: "0.0.0-vendored",
-  description: `Vendored copy of tree-sitter-${name} from @fraziym/tree-sitters (prebuilt, no native compilation at install time).`,
+  description: `Vendored copy of tree-sitter-${name} from @fraziym/tree-sitters. The bindings/node/index.js throws when required — axodex catches the throw and reports the grammar as 'unavailable'. Once prebuilds are built via CI (.github/workflows/build.yml), this sub-package will be published with prebuilds and the install script will switch to 'node-gyp-build' which loads the prebuilt .node file directly.`,
   main: "bindings/node/index.js",
-  scripts: {
-    install: "node-gyp-build",
-  },
-  dependencies: {
-    "node-gyp-build": "^5.0.0",
-  },
+  scripts: {},
+  dependencies: {},
 });
 
-const INDEX_JS = `// Loads the prebuilt .node binary for the current platform.
-// node-gyp-build prefers prebuilds/<platform>/<arch>/tree_sitter_<name>.node
-// over source compilation — if a prebuilt binary exists for the current
-// platform, NO node-gyp rebuild is triggered at install time.
-module.exports = require('node-gyp-build')(__dirname);
+const INDEX_JS = (name) => `// tree-sitter-${name} stub loader.
+//
+// This file is loaded when a consumer does require('tree-sitter-${name}').
+// We throw with a clear message — axodex's parser-loader catches the
+// throw and reports the grammar as 'unavailable'.
+//
+// Once prebuilds are built via CI (.github/workflows/build.yml), this
+// file will be replaced with:
+//   module.exports = require('node-gyp-build')(__dirname);
+// which loads the prebuilt .node file for the current platform.
+module.exports = function unavailableTreeSitterGrammar() {
+  throw new Error(
+    'tree-sitter-${name} is not built. The @fraziym/tree-sitters repo ' +
+    'has not yet produced prebuilds for this platform. ' +
+    'axodex will report ${name} parsing as unavailable. ' +
+    'See https://github.com/Akik-Forazi/tree-sitters for build instructions.'
+  );
+};
 `;
 
 function isDir(p) {
@@ -50,7 +59,7 @@ for (const g of grammars) {
   if (!existsSync(bindingsDir)) {
     mkdirSync(bindingsDir, { recursive: true });
   }
-  writeFileSync(path.join(bindingsDir, "index.js"), INDEX_JS);
+  writeFileSync(path.join(bindingsDir, "index.js"), INDEX_JS(g));
   const pkg = TEMPLATE(g);
   writeFileSync(path.join(gdir, "package.json"), JSON.stringify(pkg, null, 2) + "\n");
   console.log(`generated ${g}/package.json + bindings/node/index.js`);

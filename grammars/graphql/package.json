@@ -1,12 +1,8 @@
 {
   "name": "tree-sitter-graphql",
   "version": "0.0.0-vendored",
-  "description": "Vendored copy of tree-sitter-graphql from @fraziym/tree-sitters (prebuilt, no native compilation at install time).",
+  "description": "Vendored copy of tree-sitter-graphql from @fraziym/tree-sitters. The bindings/node/index.js throws when required — axodex catches the throw and reports the grammar as 'unavailable'. Once prebuilds are built via CI (.github/workflows/build.yml), this sub-package will be published with prebuilds and the install script will switch to 'node-gyp-build' which loads the prebuilt .node file directly.",
   "main": "bindings/node/index.js",
-  "scripts": {
-    "install": "node-gyp-build"
-  },
-  "dependencies": {
-    "node-gyp-build": "^4.8.0"
-  }
+  "scripts": {},
+  "dependencies": {}
 }
