@@ -4,6 +4,7 @@
   "description": "FRAZIYM-maintained tree-sitter grammar collection. Vendored from upstream tree-sitter-* npm packages that have no prebuilds and fail native compilation on Node 22+ Windows CI runners. Each grammar ships as a sub-package with platform prebuilds (linux-x64, win32-x64, darwin-arm64, darwin-x64) so install NEVER triggers node-gyp rebuild.",
   "license": "MIT",
   "author": "AKIK FARAJI <akikfaraji@gmail.com> (https://fraziym.com)",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/Akik-Forazi/tree-sitters.git"
