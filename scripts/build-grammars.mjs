@@ -72,7 +72,7 @@ function buildOne(grammarName) {
     // The output lands at build/Release/tree_sitter_<name>.node.
     const cmd = forceRebuild
       ? `node-gyp rebuild --release --directory="${grammarDir}"`
-      : `node-gyp build --release --directory="${grammarDir}"`;
+      : `node-gyp rebuild --release --directory="${grammarDir}"`;
     execSync(cmd, { stdio: "inherit", cwd: grammarDir });
     return true;
   } catch (e) {

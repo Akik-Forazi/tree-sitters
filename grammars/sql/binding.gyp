@@ -1,18 +1,33 @@
 {
   "targets": [
     {
-      "target_name": "tree_sitter_SQL_binding",
+      "target_name": "tree_sitter_sql",
+      "dependencies": [
+        "<!(node -p \"require('node-addon-api').targets\"):node_addon_api_except"
+      ],
       "include_dirs": [
-        "<!(node -e \"require('nan')\")",
-        "src"
+        "src",
+        "<!@(node -p \"require('node-addon-api').include\")"
       ],
       "sources": [
-        "bindings/node/binding.cc",
         "src/parser.c",
-        # If your language uses an external scanner, add it here.
+        "bindings/node/binding.cc"
       ],
-      "cflags_c": [
-        "-std=c99",
+      "conditions": [
+        [
+          "OS!='win'",
+          {
+            "cflags_c": [
+              "-std=c99"
+            ]
+          },
+          {
+            "cflags_c": [
+              "/std:c11",
+              "/utf-8"
+            ]
+          }
+        ]
       ]
     }
   ]
